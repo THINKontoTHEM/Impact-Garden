@@ -1,114 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Grow With Us Demo</title>
+  <title>Seedlings Demo</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      background-color: black;
+      background: black;
       color: white;
       font-family: sans-serif;
+      overflow: hidden;
     }
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #container {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 40px;
-      width: 100%;
-      max-width: 1800px;
-      padding: 20px;
-    }
-    #leftColumn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #canvasWrapper {
-      border: 2px solid white;
-      padding: 10px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    canvas {
-      background-color: black;
-      border: 1px dashed white;
+    #textWrapper {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      text-align: center;
+      font-size: 20px;
+      line-height: 1.5;
     }
     #instruction {
       position: absolute;
-      top: -50px;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 22px;
+      opacity: 0.8;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
       left: 0;
-      font-size: 35px;
-    }
-    #textWrapper {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-      width: 600px;
-    }
-    #growText {
-      font-size: 35px;
-      white-space: pre-wrap;
-      width: 300px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    #growFinal {
-      font-size: 35px;
-      width: 300px;
     }
     #gallery {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
       display: flex;
       flex-wrap: wrap;
-      max-width: 720px;
-      width: 720px;
-      gap: 0px;
-      justify-content: center;
+      width: 360px;
+      gap: 5px;
     }
     .thumb {
-      width: 200px;
-      height: 200px;
+      width: 100px;
+      height: 100px;
       object-fit: contain;
-      margin: -45px;
+      border: 1px solid white;
     }
     #restartBtn {
-      margin-top: 10px;
-      padding: 5px 10px;
-      font-size: 35px;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      font-size: 16px;
       background: white;
       color: black;
       border: none;
       cursor: pointer;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <div id="leftColumn">
-      <div id="canvasWrapper">
-        <div id="instruction">請在此畫下你的菜苗 🌱</div>
-        <canvas id="drawCanvas" width="450" height="450"></canvas>
-        <button id="restartBtn">Restart</button>
-      </div>
-    </div>
-    <div id="textWrapper">
-      <div id="growText"></div>
-      <div id="growFinal"></div>
-    </div>
-    <div id="gallery"></div>
+  <button id="restartBtn">Restart</button>
+  <canvas id="drawCanvas"></canvas>
+  <div id="textWrapper">
+    <div id="growText"></div>
+    <div id="growFinal"></div>
   </div>
+  <div id="instruction">PLEASE DRAW YOUR SEEDLINGS HERE</div>
+  <div id="gallery"></div>
 
+  <!-- 引入 html2canvas 來做全頁截圖 -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
     const canvas = document.getElementById("drawCanvas");
     const ctx = canvas.getContext("2d");
@@ -116,35 +84,45 @@
     let growShown = false;
     let textInterval;
 
-    canvas.addEventListener("mousedown", (e) => {
-      drawing = true;
+    // 設定全螢幕畫布
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // 嘗試自動全屏
+    function goFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+    // 嘗試進入全屏（部分瀏覽器要互動後才能生效）
+    document.addEventListener("DOMContentLoaded", goFullscreen);
+    document.addEventListener("click", goFullscreen, { once: true });
+
+    // 抽取座標
+    function getPosition(e) {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    });
+      if (e.touches) {
+        return {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
+        };
+      } else {
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+    }
 
-    canvas.addEventListener("mouseup", () => {
-      drawing = false;
-      ctx.beginPath();
-      if (!growShown) checkForSeedling();
-    });
-
-    canvas.addEventListener("mouseout", () => {
-      drawing = false;
-      ctx.beginPath();
-    });
-
-    canvas.addEventListener("mousemove", draw);
-
-    function draw(e) {
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    // 畫線
+    function drawLine(x, y) {
       ctx.strokeStyle = "white";
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 5;
       ctx.lineCap = "round";
       ctx.lineTo(x, y);
       ctx.stroke();
@@ -152,33 +130,71 @@
       ctx.moveTo(x, y);
     }
 
+    // 滑鼠事件
+    canvas.addEventListener("mousedown", (e) => {
+      drawing = true;
+      const pos = getPosition(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      if (!drawing) return;
+      const pos = getPosition(e);
+      drawLine(pos.x, pos.y);
+    });
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+
+    // 觸控事件
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      drawing = true;
+      const pos = getPosition(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    });
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      if (!drawing) return;
+      const pos = getPosition(e);
+      drawLine(pos.x, pos.y);
+    });
+    canvas.addEventListener("touchend", stopDrawing);
+
+    function stopDrawing() {
+      if (drawing && !growShown) checkForSeedling();
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    // 簡單判斷是否有畫
     function checkForSeedling() {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
       let whitePixels = 0;
       for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        if (r > 200 && g > 200 && b > 200) whitePixels++;
+        if (data[i] > 200 && data[i+1] > 200 && data[i+2] > 200) whitePixels++;
       }
       if (whitePixels > 500) {
         growShown = true;
+        document.getElementById("instruction").style.display = "none";
         showGrowText();
       }
     }
 
+    // 逐行顯示文字
     function showGrowText() {
       const target = document.getElementById("growText");
       const final = document.getElementById("growFinal");
       target.innerHTML = "";
       final.innerHTML = "";
+
       const lines = [
         "🌱 At Our Farm, Every Leaf Tells a Sustainable Story",
         "From seed to harvest (avg. 50g/leafy green), our system:",
-        "🌍Reduces CO₂e by 1.1 Kg",
-        "\n💧Saves 14 L water",
-        "\n🥗Cuts food waste by 25 g in transport/retail"
+        "🌍 Reduces CO₂e by 1.1 Kg",
+        "💧 Saves 14 L water",
+        "🥗 Cuts food waste by 25 g in transport/retail"
       ];
       let index = 0;
 
@@ -192,8 +208,9 @@
           clearInterval(textInterval);
           const block = `
             <strong>✨ Small Plants, Big Impact</strong><br>
-            截止目前，我們已經向市場輸送了2468kg 蔬菜，並已捐贈出1000顆蔬菜給有需要的家庭。<br>
-            感謝你對農場的支持，希望這個小苗能在更多人心中生根發芽！
+            Up to now, we have delivered 2468kg of vegetables to the market,<br>
+            and donated 1000 fresh greens to families in need.<br>
+            Thank you for your support — may this little seedling take root in more hearts!
           `;
           final.innerHTML = block;
           setTimeout(() => {
@@ -204,23 +221,21 @@
       }, 1000);
     }
 
-    function saveDrawing() {
-      const gallery = document.getElementById("gallery");
-      const img = new Image();
-      img.src = canvas.toDataURL("image/png");
-      img.classList.add("thumb");
-      gallery.appendChild(img);
-    }
-
+    // Restart ＝ 截圖整個頁面
     document.getElementById("restartBtn").addEventListener("click", () => {
-      saveDrawing();
+      html2canvas(document.body).then(canvasImg => {
+        const gallery = document.getElementById("gallery");
+        const img = new Image();
+        img.src = canvasImg.toDataURL("image/png");
+        img.classList.add("thumb");
+        gallery.appendChild(img);
+      });
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       growShown = false;
-      clearInterval(textInterval);
       document.getElementById("growText").innerHTML = "";
       document.getElementById("growFinal").innerHTML = "";
+      document.getElementById("instruction").style.display = "block";
     });
   </script>
 </body>
-
 </html>
