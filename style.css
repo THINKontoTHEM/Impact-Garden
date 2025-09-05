@@ -1,39 +1,59 @@
+/* 全域 */
 body {
   margin: 0;
-  background: black;
-  color: white;
+  background-color: #000;
+  color: #fff;
   font-family: 'Public Sans', sans-serif;
-  overflow: hidden;
+  overflow: hidden; /* 舞台全螢幕不出現滾動條 */
 }
 
-.center-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  font-size:20pt;
-  white-space: pre-line;
+/* ===== 開始畫面 & 開場字幕（與參考面板一致） ===== */
+.start-screen,
+.opening-scene {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* 垂直置中 */
+  align-items: center;      /* 水平置中 */
+  z-index: 999;
+  color: #fff;
 }
 
-.hidden {
-  display: none;
+.start-text {
+  font-size: 28pt;
+  font-style: italic;   /* REGULAR 斜體 */
+  font-weight: 400;
+  color: #fff;
+  opacity: 0.5;         /* 50% 透明 */
+  cursor: pointer;
+  animation: blink 1.5s infinite;
 }
 
+@keyframes blink {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+
+.opening-text {
+  font-size: 32pt;
+  font-weight: 400;
+  color: rgb(138,196,71);    /* 綠色主色 */
+  text-align: left;
+  white-space: pre-line;     /* \n 斷行 */
+}
+.opening-text .highlight {
+  font-style: italic;
+  color: rgb(235,62,148);    /* 粉紅重點 */
+}
+
+/* ===== 主舞台（保留你的原互動區設定） ===== */
 #mainStage {
   position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-}
-
-#drawHint {
-  position: absolute;
-  bottom: 20px;
-  width: 100%;
-  text-align: center;
-  font-size: 20px;
-  color: white;
 }
 
 #canvasContainer img {
@@ -42,14 +62,20 @@ body {
   pointer-events: none;
 }
 
+/* 重新開始按鈕 */
 #restartBtn {
   position: absolute;
   right: 20px;
   bottom: 20px;
-  background: white;
-  color: black;
+  background: #fff;
+  color: #000;
   border: none;
   font-size: 18px;
   padding: 10px 20px;
   cursor: pointer;
+  border-radius: 6px;
 }
+
+/* 你原本會用到的輔助類別（避免報錯） */
+.center-text { display: none; } /* 現在不用這塊，但保留 class 以防程式引用 */
+.hidden { display: none; }

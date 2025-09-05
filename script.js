@@ -1,57 +1,78 @@
-// 打字機效果
-const introLines = [
-  "AT OUR FUTURE FARM,",
-  "EVERY LEAF TELLS A SUSTAINABLE STORY",
-  "CLICK HERE TO DRAW SEEDLINGS",
-  "TO UNVEIL THE IMPACT OF EVERY PLANT WE GROW"
-];
-const introText = document.getElementById("introText");
-let lineIndex = 0;
-
-function typeLine() {
-  if (lineIndex >= introLines.length) {
-    introText.addEventListener("click", startInteraction);
-    return;
-  }
-  let line = introLines[lineIndex];
-  let i = 0;
-  let lineDiv = document.createElement("div");
-  introText.appendChild(lineDiv);
-  let interval = setInterval(() => {
-    lineDiv.textContent += line[i];
-    i++;
-    if (i >= line.length) {
-      clearInterval(interval);
-      lineIndex++;
-      setTimeout(typeLine, 800);
-    }
-  }, 80);
-}
-typeLine();
+// === 開場動畫控制（取代原本的打字機 introLines 版本） ===
+const startScreen = document.querySelector(".start-screen");
+const openingScene = document.querySelector(".opening-scene");
+const textEl = document.querySelector(".opening-text");
 
 // 主互動變數
 const mainStage = document.getElementById("mainStage");
 const canvasContainer = document.getElementById("canvasContainer");
 const restartBtn = document.getElementById("restartBtn");
+const introText = document.getElementById("introText"); // 保留相容
 
 let seedlings = [];
 let plantsActive = [false, false, false];
 
-// 設計解析度
+let textFinished = false;
+
+// 第一次點擊：進入全螢幕 + 顯示開場字幕（打字機）
+document.body.addEventListener("click", async () => {
+  if (startScreen && startScreen.style.display !== "none") {
+    if (document.documentElement.requestFullscreen) {
+      try { await document.documentElement.requestFullscreen(); } catch (e) {}
+    }
+    // 顯示開場字幕
+    startScreen.style.display = "none";
+    if (openingScene) openingScene.style.display = "flex";
+
+    const text = `AT OUR FUTURE FARM,\nEVERY LEAF TELLS A <span class="highlight">SUSTAINABLE STORY.</span>`;
+    textEl.innerHTML = "";
+    let i = 0;
+    const typer = setInterval(() => {
+      textEl.innerHTML = text.substring(0, i) + (i < text.length ? "|" : "");
+      i++;
+      if (i > text.length) {
+        clearInterval(typer);
+        textFinished = true;
+      }
+    }, 50);
+    return;
+  }
+
+  // 第二次點擊：字幕結束後，淡出字幕 → 進入互動
+  if (textFinished && openingScene && openingScene.style.display !== "none") {
+    openingScene.style.transition = "opacity 1s";
+    openingScene.style.opacity = "0";
+    setTimeout(() => {
+      openingScene.style.display = "none";
+
+      if (typeof startInteraction === "function") {
+        startInteraction();
+      } else {
+        mainStage && mainStage.classList.remove("hidden");
+      }
+    }, 1000);
+  }
+});
+
+// === 設計解析度 ===
 const designWidth = 1920;
 const designHeight = 1080;
 
 // 開始互動
 function startInteraction() {
+  // 再次保險，若還沒全螢幕則請求
   if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen();
+    try { document.documentElement.requestFullscreen(); } catch (e) {}
   }
 
-  introText.classList.add("hidden");
+  introText && introText.classList.add("hidden");
   mainStage.classList.remove("hidden");
 
   mainStage.addEventListener("click", placeSeedling);
 }
+
+// 放置 SEEDLING 之後的程式保持不動
+
 
 // 放置 SEEDLING
 function placeSeedling(e) {

@@ -4,15 +4,25 @@
   <meta charset="UTF-8">
   <title>Future Farm Impact</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-  <!-- 開場文字 -->
-  <div id="introText" class="center-text"></div>
+  <!-- Start Screen -->
+  <div class="start-screen">
+    <div class="start-text">[CLICK TO START]</div>
+  </div>
+
+  <!-- Opening Scene -->
+  <div class="opening-scene" style="display:none;">
+    <div class="opening-text"></div>
+  </div>
+
+  <!-- 兼容舊中段邏輯（若 startInteraction() 還會觸碰 introText） -->
+  <div id="introText" class="hidden"></div>
 
   <!-- 主畫布容器 -->
   <div id="mainStage" class="hidden">
-    <div id="drawHint">PLEASE DRAW YOUR SEEDLINGS HERE</div>
     <div id="canvasContainer"></div>
     <button id="restartBtn" class="hidden">SAVE & RESTART</button>
   </div>
