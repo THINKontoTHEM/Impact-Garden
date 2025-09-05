@@ -58,8 +58,8 @@ function placeSeedling(e) {
   const rect = mainStage.getBoundingClientRect();
   const x = e.clientX - rect.left;
 
-  const choices = ["1.svg", "2.svg", "3.svg"];
-  const widths = { "1.svg": 230, "2.svg": 255, "3.svg": 150 };
+  const choices = ["1.svg", "2.svg", "3.svg", "4.svg", "5.svg"];
+  const widths = { "1.svg": 132, "2.svg": 155, "3.svg": 102, "4.svg": 152, "5.svg": 102  };
   const pick = choices[Math.floor(Math.random() * choices.length)];
 
   let img = document.createElement("img");
@@ -89,11 +89,10 @@ function placeSeedling(e) {
 // 背景動畫：雲 & 水滴
 function startBackgroundAnimation() {
   const clouds = [
-    { file: "1.svg", x: 150, y: 190, w: 250, minX: 120, maxX: 190 },
-    { file: "2.svg", x: 610, y: 210, w: 340, minX: 580, maxX: 650 },
-    { file: "3.svg", x: 970, y: 200, w: 175, minX: 950, maxX: 1000 },
-    { file: "4.svg", x: 1325, y: 190, w: 250, minX: 1300, maxX: 1350 },
-    { file: "5.svg", x: 1650, y: 200, w: 230, minX: 1630, maxX: 1670 },
+    { file: "1.svg", x: 130, y: 12.5, w: 374, minX: 90, maxX: 170 },
+    { file: "2.svg", x: 655, y: 68.5, w: 295, minX: 615, maxX: 695 },
+    { file: "3.svg", x: 1101, y: 31, w: 305, minX: 1060, maxX: 1141 },
+    { file: "4.svg", x: 1580, y: 60, w: 205, minX: 1540, maxX: 1620 },
   ];
   clouds.forEach((c, i) => {
     let img = document.createElement("img");
@@ -110,12 +109,17 @@ function startBackgroundAnimation() {
   });
 
   const drips = [
-    { file: "1.svg", x: 101, y: 435, w: 50 },
-    { file: "2.svg", x: 695, y: 550, w: 50 },
-    { file: "3.svg", x: 985, y: 390, w: 80 },
-    { file: "4.svg", x: 1115, y: 500, w: 50 },
-    { file: "5.svg", x: 1675, y: 360, w: 50 },
-    { file: "6.svg", x: 1820, y: 480, w: 70 },
+    { file: "1.svg", x: 85, y:220, w: 36 },
+    { file: "2.svg", x: 232, y: 287, w: 56 },
+    { file: "3.svg", x: 367, y: 384, w: 36 },
+    { file: "4.svg", x: 463, y: 269, w: 30 },
+    { file: "5.svg", x: 552, y: 597, w: 30 },
+    { file: "6.svg", x: 536, y: 294, w: 191 },
+    { file: "7.svg", x: 976, y: 233, w: 55 },
+    { file: "8.svg", x: 1233, y: 266, w: 152 },
+    { file: "9.svg", x: 1453, y: 214, w: 30 },
+    { file: "10.svg", x: 1591, y: 220, w: 117 },
+    { file: "11.svg", x: 1799, y: 258, w: 36 },
   ];
   drips.forEach((d, i) => {
     let img = document.createElement("img");
@@ -132,15 +136,33 @@ function startBackgroundAnimation() {
   });
 }
 
-// 雲動畫（來回飄）
+// 雲動畫（隨機速度 + 區間內來回飄）
 function animateCloud(img, cloud, scaleX) {
-  let dir = 1;
-  setInterval(() => {
-    let left = parseFloat(img.style.left);
-    left += dir * 0.3;
-    if (left > cloud.maxX * scaleX || left < cloud.minX * scaleX) dir *= -1;
+  // 隨機初始方向（1: 向右, -1: 向左）
+  let dir = Math.random() < 0.5 ? -1 : 1;
+  // 隨機速度（0.1 ~ 0.5 像素/幀）
+  let speed = 0.1 + Math.random() * 0.4;
+
+  function step() {
+    let left = parseFloat(img.style.left) || cloud.minX * scaleX;
+    left += dir * speed;
+
+    // 到達邊界就反轉方向 & 隨機新速度
+    if (left > cloud.maxX * scaleX) {
+      left = cloud.maxX * scaleX;
+      dir = -1;
+      speed = 0.1 + Math.random() * 0.4;
+    } else if (left < cloud.minX * scaleX) {
+      left = cloud.minX * scaleX;
+      dir = 1;
+      speed = 0.1 + Math.random() * 0.4;
+    }
+
     img.style.left = left + "px";
-  }, 30);
+    requestAnimationFrame(step);
+  }
+
+  step();
 }
 
 // 水滴動畫
@@ -173,9 +195,9 @@ function checkPlants() {
 // 顯示 Plant
 function showPlant(zone) {
   const plants = [
-    { file: "1.svg", x: 400, w: 655 },
-    { file: "2.svg", x: 920, w: 540 },
-    { file: "3.svg", x: 1530, w: 700 },
+    { file: "1.svg", x: 271, w: 500 },
+    { file: "2.svg", x: 956, w: 513.5 },
+    { file: "3.svg", x: 1565, w: 615 },
   ];
   const p = plants[zone];
 
