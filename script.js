@@ -71,10 +71,8 @@ function startInteraction() {
   mainStage.addEventListener("click", placeSeedling);
 }
 
-// 放置 SEEDLING 之後的程式保持不動
 
-
-// 預加載圖片
+// ✅ 預加載圖片
 const seedlingCache = {};
 ["1.svg", "2.svg", "3.svg", "4.svg", "5.svg"].forEach(file => {
   const img = new Image();
@@ -82,6 +80,7 @@ const seedlingCache = {};
   seedlingCache[file] = img;
 });
 
+// ✅ 放置 SEEDLING
 function placeSeedling(e) {
   const rect = mainStage.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -90,16 +89,23 @@ function placeSeedling(e) {
   const widths = { "1.svg": 132, "2.svg": 155, "3.svg": 102, "4.svg": 152, "5.svg": 102 };
   const pick = choices[Math.floor(Math.random() * choices.length)];
 
-  let img = seedlingCache[pick].cloneNode();  // ✅ 用緩存好的圖
+  let img = seedlingCache[pick].cloneNode(); // 用緩存好的圖
   img.style.position = "absolute";
 
+  // 📐 用比例算高度，避免 img.height = 0 的問題
   const scaleX = window.innerWidth / designWidth;
   const widthPx = widths[pick] * scaleX;
-  img.style.width = widthPx + "px";
 
+  const aspect = seedlingCache[pick].naturalHeight / seedlingCache[pick].naturalWidth;
+  const heightPx = widthPx * aspect;
+
+  img.style.width = widthPx + "px";
+  img.style.height = heightPx + "px";
+
+  // 底部貼齊
   const groundY = window.innerHeight;
   img.style.left = (x - widthPx / 2) + "px";
-  img.style.top = (groundY - img.height) + "px";
+  img.style.top = (groundY - heightPx) + "px";
 
   canvasContainer.appendChild(img);
   seedlings.push({ x, zone: getZone(x) });
@@ -107,6 +113,7 @@ function placeSeedling(e) {
   if (seedlings.length === 3) startBackgroundAnimation();
   checkPlants();
 }
+
 
 // 背景動畫：雲 & 水滴
 function startBackgroundAnimation() {
@@ -137,7 +144,7 @@ function startBackgroundAnimation() {
     { file: "4.svg", x: 463, y: 269, w: 30 },
     { file: "5.svg", x: 552, y: 597, w: 30 },
     { file: "6.svg", x: 536, y: 270, w: 157 },
-    { file: "7.svg", x: 981.5, y: 258, w: 66 },
+    { file: "7.svg", x: 954.5, y: 258, w: 66 },
     { file: "8.svg", x: 1257.5, y: 266, w: 120 },
     { file: "9.svg", x: 1467, y: 233, w: 30 },
     { file: "10.svg", x: 1626, y: 240, w: 80 },
@@ -218,7 +225,7 @@ function checkPlants() {
 function showPlant(zone) {
   const plants = [
     { file: "1.svg", x: 271.5, w: 498 },
-    { file: "2.svg", x: 978, w: 547.5 },
+    { file: "2.svg", x: 946.5, w: 547.5 },
     { file: "3.svg", x: 1565.5, w: 615 },
   ];
   const p = plants[zone];
