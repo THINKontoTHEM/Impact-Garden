@@ -117,26 +117,11 @@ function placeSeedling(e) {
 
 // 背景動畫：雲 & 水滴
 function startBackgroundAnimation() {
-  const clouds = [
-    { file: "1.svg", x: 149, y: 45, w: 374, minX: 90, maxX: 170 },
-    { file: "2.svg", x: 684, y: 110, w: 205, minX: 615, maxX: 695 },
-    { file: "3.svg", x: 1071, y: 59, w: 299, minX: 1060, maxX: 1141 },
-    { file: "4.svg", x: 1580, y: 60, w: 205, minX: 1540, maxX: 1620 },
-  ];
-  clouds.forEach((c, i) => {
-    let img = document.createElement("img");
-    img.src = `assets/Clouds/${c.file}`;
-    img.style.position = "absolute";
-    const scaleX = window.innerWidth / designWidth;
-    const scaleY = window.innerHeight / designHeight;
-    img.style.width = (c.w * scaleX) + "px";
-    img.style.left = (c.x * scaleX) + "px";
-    img.style.top = (c.y * scaleY) + "px";
-    canvasContainer.appendChild(img);
+  const scaleX = window.innerWidth / designWidth;
+  const scaleY = window.innerHeight / designHeight;
 
-    animateCloud(img, c, scaleX);
-  });
-
+  // --------------------
+  // 1️⃣ 先放水滴
   const drips = [
     { file: "1.svg", x: 85, y:220, w: 36 },
     { file: "2.svg", x: 247, y: 287, w: 60 },
@@ -150,20 +135,56 @@ function startBackgroundAnimation() {
     { file: "10.svg", x: 1626, y: 240, w: 80 },
     { file: "11.svg", x: 1799, y: 258, w: 36 },
   ];
+
   drips.forEach((d, i) => {
     let img = document.createElement("img");
     img.src = `assets/Drips/${d.file}`;
     img.style.position = "absolute";
-    const scaleX = window.innerWidth / designWidth;
-    const scaleY = window.innerHeight / designHeight;
     img.style.width = (d.w * scaleX) + "px";
     img.style.left = (d.x * scaleX) + "px";
     img.style.top = (d.y * scaleY) + "px";
+    img.style.opacity = 1;
     canvasContainer.appendChild(img);
 
     animateDrip(img, i);
   });
+
+  // --------------------
+  // 2️⃣ 延遲顯示雲
+  setTimeout(() => {
+    const clouds = [
+      { file: "1.svg", x: 149, y: 45, w: 374, minX: 90, maxX: 170 },
+      { file: "2.svg", x: 684, y: 110, w: 205, minX: 615, maxX: 695 },
+      { file: "3.svg", x: 1071, y: 59, w: 299, minX: 1060, maxX: 1141 },
+      { file: "4.svg", x: 1580, y: 60, w: 205, minX: 1540, maxX: 1620 },
+    ];
+
+    clouds.forEach((c) => {
+      let img = document.createElement("img");
+      img.src = `assets/Clouds/${c.file}`;
+      img.style.position = "absolute";
+      img.style.width = (c.w * scaleX) + "px";
+      img.style.left = (c.x * scaleX) + "px";
+      img.style.top = (c.y * scaleY) + "px";
+      img.style.opacity = 0; // 初始透明
+      canvasContainer.appendChild(img);
+
+      // 漸變淡入
+      let opacity = 0;
+      const fadeInInterval = setInterval(() => {
+        opacity += 0.01; // 調整淡入速度
+        img.style.opacity = opacity;
+        if (opacity >= 1) {
+          img.style.opacity = 1;
+          clearInterval(fadeInInterval);
+          // 開始漂動動畫
+          animateCloud(img, c, scaleX);
+        }
+      }, 30);
+    });
+  }, 500); // 延遲 1.5 秒，可改成 2000
 }
+
 
 // 雲動畫（隨機速度 + 區間內來回飄）
 function animateCloud(img, cloud, scaleX) {
@@ -201,7 +222,7 @@ function animateDrip(img, i) {
   }, 2000 + i * 300);
 }
 
-// 檢查 PLANT 激活
+// 檢查 SEEDLING 所屬區域
 function getZone(x) {
   const width = window.innerWidth;
   if (x < width / 3) return 0;
@@ -221,36 +242,90 @@ function checkPlants() {
   if (plantsActive.every(v => v)) restartBtn.classList.remove("hidden");
 }
 
-// 顯示 Plant
 function showPlant(zone) {
-  const plants = [
-    { file: "1.svg", x: 271.5, w: 498 },
-    { file: "2.svg", x: 946.5, w: 547.5 },
-    { file: "3.svg", x: 1565.5, w: 615 },
-  ];
-  const p = plants[zone];
-
-  let img = document.createElement("img");
-  img.src = `assets/Impact/${p.file}`;
-  img.style.position = "absolute";
-
-  const scaleX = window.innerWidth / designWidth;
-  const scaleY = window.innerHeight / designHeight;
-  img.style.width = (p.w * scaleX) + "px";
-  img.style.left = (p.x * scaleX - (p.w * scaleX) / 2) + "px";
-  img.style.top = window.innerHeight + "px"; // start off screen
-  canvasContainer.appendChild(img);
-
-  img.onload = () => {
-    const target = window.innerHeight - img.height; // 底部貼齊
-    let pos = window.innerHeight;
-    let interval = setInterval(() => {
-      pos -= 5;
-      img.style.top = pos + "px";
-      if (pos <= target) clearInterval(interval);
-    }, 30);
+  // 三個區域的三個部分數據（X,Y 都是左上角座標）
+  const plantParts = {
+    0: [
+      { file: "1-1.svg", x: 197,   y: 577, w: 293, anim: "rise" },
+      { file: "1-2.svg", x: 138, y: 725, w: 384, anim: "fade" },
+      { file: "1-3.svg", x: 22,    y: 420, w: 490, anim: "fade" }
+    ],
+    1: [
+      { file: "2-1.svg", x: 735,   y: 493, w: 274, anim: "rise" },
+      { file: "2-2.svg", x: 697.5, y: 532, w: 501, anim: "fade" },
+      { file: "2-3.svg", x: 675, y: 312.5, w: 495, anim: "fade" }
+    ],
+    2: [
+      { file: "3-1.svg", x: 1389.5, y: 476, w: 352, anim: "rise" },
+      { file: "3-2.svg", x: 1355,   y: 414, w: 409, anim: "fade" },
+      { file: "3-3.svg", x: 1258,   y: 330, w: 620, anim: "fade" }
+    ]
   };
+
+  const parts = plantParts[zone];
+
+  // 遞迴執行動畫：一個完成後再執行下一個
+  function playPart(index) {
+    if (index >= parts.length) return;
+
+    const p = parts[index];
+    let img = document.createElement("img");
+    img.src = `assets/Impact/${p.file}`;
+    img.style.position = "absolute";
+    img.style.opacity = 0;
+
+    const scaleX = window.innerWidth / designWidth;
+    const scaleY = window.innerHeight / designHeight;
+
+    const widthPx = p.w * scaleX;
+    const leftPx = p.x * scaleX; // ✅ 左上角
+    const topPx  = p.y * scaleY; // ✅ 左上角
+
+    img.style.width = widthPx + "px";
+    img.style.left = leftPx + "px";
+
+    if (p.anim === "rise") {
+      // 從底部升起
+      img.style.top = window.innerHeight + "px";
+      canvasContainer.appendChild(img);
+      img.style.opacity = 1;
+
+      let pos = window.innerHeight;
+      const target = topPx;
+
+      let interval = setInterval(() => {
+        pos -= 5;
+        img.style.top = pos + "px";
+        if (pos <= target) {
+          img.style.top = target + "px";
+          clearInterval(interval);
+          playPart(index + 1); // ✅ 上升結束 → 播放下一個
+        }
+      }, 20);
+    } else if (p.anim === "fade") {
+      img.style.top = topPx + "px";
+      canvasContainer.appendChild(img);
+
+      let opacity = 0;
+      let interval = setInterval(() => {
+        opacity += 0.05;
+        img.style.opacity = opacity;
+        if (opacity >= 1) {
+          img.style.opacity = 1;
+          clearInterval(interval);
+          playPart(index + 1); // ✅ 淡入結束 → 播放下一個
+        }
+      }, 50);
+    }
+  }
+
+  // 從第一部分開始
+  playPart(0);
 }
+
+
+
+
 
 
 // RESTART
