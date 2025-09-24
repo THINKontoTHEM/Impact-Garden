@@ -246,7 +246,7 @@ function showPlant(zone) {
   // 三個區域的三個部分數據（X,Y 都是左上角座標）
   const plantParts = {
     0: [
-      { file: "1-1.svg", x: 197,   y: 577, w: 293, anim: "rise" },
+      { file: "1-1.svg", x: 197,   y: 590, w: 293, anim: "rise" },
       { file: "1-2.svg", x: 138, y: 725, w: 384, anim: "fade" },
       { file: "1-3.svg", x: 22,    y: 420, w: 490, anim: "fade" }
     ],
