@@ -308,7 +308,7 @@ function showPlant(zone) {
 
       let opacity = 0;
       let interval = setInterval(() => {
-        opacity += 0.05;
+        opacity += 0.02;
         img.style.opacity = opacity;
         if (opacity >= 1) {
           img.style.opacity = 1;
