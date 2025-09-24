@@ -74,31 +74,32 @@ function startInteraction() {
 // 放置 SEEDLING 之後的程式保持不動
 
 
-// 放置 SEEDLING
+// 預加載圖片
+const seedlingCache = {};
+["1.svg", "2.svg", "3.svg", "4.svg", "5.svg"].forEach(file => {
+  const img = new Image();
+  img.src = `assets/Seedlings/${file}`;
+  seedlingCache[file] = img;
+});
+
 function placeSeedling(e) {
   const rect = mainStage.getBoundingClientRect();
   const x = e.clientX - rect.left;
 
   const choices = ["1.svg", "2.svg", "3.svg", "4.svg", "5.svg"];
-  const widths = { "1.svg": 132, "2.svg": 155, "3.svg": 102, "4.svg": 152, "5.svg": 102  };
+  const widths = { "1.svg": 132, "2.svg": 155, "3.svg": 102, "4.svg": 152, "5.svg": 102 };
   const pick = choices[Math.floor(Math.random() * choices.length)];
 
-  let img = document.createElement("img");
-  img.src = `assets/Seedlings/${pick}`;
+  let img = seedlingCache[pick].cloneNode();  // ✅ 用緩存好的圖
   img.style.position = "absolute";
 
-  img.onload = () => {
-    // 百分比縮放
-    const scaleX = window.innerWidth / designWidth;
-    const scaleY = window.innerHeight / designHeight;
-    const widthPx = widths[pick] * scaleX;
-    img.style.width = widthPx + "px";
+  const scaleX = window.innerWidth / designWidth;
+  const widthPx = widths[pick] * scaleX;
+  img.style.width = widthPx + "px";
 
-    // 底部貼齊
-    const groundY = window.innerHeight;
-    img.style.left = (x - widthPx / 2) + "px";
-    img.style.top = (groundY - img.height) + "px";
-  };
+  const groundY = window.innerHeight;
+  img.style.left = (x - widthPx / 2) + "px";
+  img.style.top = (groundY - img.height) + "px";
 
   canvasContainer.appendChild(img);
   seedlings.push({ x, zone: getZone(x) });
@@ -110,9 +111,9 @@ function placeSeedling(e) {
 // 背景動畫：雲 & 水滴
 function startBackgroundAnimation() {
   const clouds = [
-    { file: "1.svg", x: 130, y: 12.5, w: 374, minX: 90, maxX: 170 },
-    { file: "2.svg", x: 655, y: 68.5, w: 295, minX: 615, maxX: 695 },
-    { file: "3.svg", x: 1101, y: 31, w: 305, minX: 1060, maxX: 1141 },
+    { file: "1.svg", x: 149, y: 45, w: 374, minX: 90, maxX: 170 },
+    { file: "2.svg", x: 684, y: 110, w: 205, minX: 615, maxX: 695 },
+    { file: "3.svg", x: 1071, y: 59, w: 299, minX: 1060, maxX: 1141 },
     { file: "4.svg", x: 1580, y: 60, w: 205, minX: 1540, maxX: 1620 },
   ];
   clouds.forEach((c, i) => {
@@ -131,15 +132,15 @@ function startBackgroundAnimation() {
 
   const drips = [
     { file: "1.svg", x: 85, y:220, w: 36 },
-    { file: "2.svg", x: 232, y: 287, w: 56 },
+    { file: "2.svg", x: 247, y: 287, w: 60 },
     { file: "3.svg", x: 367, y: 384, w: 36 },
     { file: "4.svg", x: 463, y: 269, w: 30 },
     { file: "5.svg", x: 552, y: 597, w: 30 },
-    { file: "6.svg", x: 536, y: 294, w: 191 },
-    { file: "7.svg", x: 976, y: 233, w: 55 },
-    { file: "8.svg", x: 1233, y: 266, w: 152 },
-    { file: "9.svg", x: 1453, y: 214, w: 30 },
-    { file: "10.svg", x: 1591, y: 220, w: 117 },
+    { file: "6.svg", x: 536, y: 270, w: 157 },
+    { file: "7.svg", x: 981.5, y: 258, w: 66 },
+    { file: "8.svg", x: 1257.5, y: 266, w: 120 },
+    { file: "9.svg", x: 1467, y: 233, w: 30 },
+    { file: "10.svg", x: 1626, y: 240, w: 80 },
     { file: "11.svg", x: 1799, y: 258, w: 36 },
   ];
   drips.forEach((d, i) => {
@@ -216,9 +217,9 @@ function checkPlants() {
 // 顯示 Plant
 function showPlant(zone) {
   const plants = [
-    { file: "1.svg", x: 271, w: 500 },
-    { file: "2.svg", x: 956, w: 513.5 },
-    { file: "3.svg", x: 1565, w: 615 },
+    { file: "1.svg", x: 271.5, w: 498 },
+    { file: "2.svg", x: 978, w: 547.5 },
+    { file: "3.svg", x: 1565.5, w: 615 },
   ];
   const p = plants[zone];
 
@@ -244,14 +245,9 @@ function showPlant(zone) {
   };
 }
 
-// SAVE & RESTART
-restartBtn.addEventListener("click", () => {
-  html2canvas(document.body).then(canvas => {
-    let link = document.createElement("a");
-    link.download = "screenshot.png";
-    link.href = canvas.toDataURL();
-    link.click();
 
-    window.location.reload();
-  });
+// RESTART
+restartBtn.addEventListener("click", () => {
+  window.location.reload();
+
 });

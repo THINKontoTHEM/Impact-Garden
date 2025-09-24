@@ -67,14 +67,22 @@ body {
   position: absolute;
   right: 20px;
   bottom: 20px;
-  background: #fff;
-  color: #000;
-  border: none;
+  background: transparent;
+  color: #fff;
+  font-style: italic;
   font-size: 18px;
   padding: 10px 20px;
   cursor: pointer;
+  border: 2px solid rgb(235,62,148);
   border-radius: 6px;
+  transition: all 0.3s ease;
 }
+
+#restartBtn:hover {
+  background: rgb(235,62,148);
+  color: #fff;
+}
+
 
 /* 你原本會用到的輔助類別（避免報錯） */
 .center-text { display: none; } /* 現在不用這塊，但保留 class 以防程式引用 */
