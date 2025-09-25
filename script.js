@@ -257,7 +257,7 @@ function showPlant(zone) {
     ],
     2: [
       { file: "3-1.svg", x: 1389.5, y: 476, w: 352, anim: "rise" },
-      { file: "3-2.svg", x: 1355,   y: 414, w: 409, anim: "fade" },
+      { file: "3-2.svg", x: 1350,   y: 400, w: 409, anim: "fade" },
       { file: "3-3.svg", x: 1258,   y: 330, w: 620, anim: "fade" }
     ]
   };
